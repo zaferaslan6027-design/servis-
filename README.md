@@ -77,7 +77,7 @@ Dosyalarda değişiklik yaptıktan sonra `npx wrangler deploy` çalıştırmanı
 ## Dosyalar
 
 - `src/worker.js`: sunucu (giriş, veri, anlık yayın)
-- `public/admin.html`, `public/live.js`: yönetici
+- `public/admin.html`, `public/live.js`: yönetici.)
 - `public/driver.html`: şoför uygulaması
 - `public/shared.js`: ortak hesaplar
 - `wrangler.toml`: Cloudflare ayarı
