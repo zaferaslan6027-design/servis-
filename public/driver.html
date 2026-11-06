@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1d5c47">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Servis">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/icon-192.png">
+<title>Servis Şoförü</title>
+<style>
+/* Düzen: üstte logo/bağlantı, ortada kaydırılan sayfa, altta dört sekmeli çubuk. Telefon öncelikli. */
+:root{
+  --bg:#eef1ee;--panel:#fff;--ink:#15211b;--muted:#5d6b63;--line:#d5ddd8;--primary:#1d5c47;--primary-ink:#fff;--soft:#e3efe9;
+  --ok:#1b7a43;--ok-bg:#dcf1e3;--late:#a8620d;--late-bg:#f9e8c9;--bad:#b3261e;--bad-bg:#f9dcd9;--soon:#1a5fb4;--soon-bg:#dce8fa;--field:#f6f8f6;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f1a15;--panel:#18211c;--ink:#e6ede8;--muted:#97a69d;--line:#2b3831;--primary:#4fa686;--primary-ink:#06130d;--soft:#1f3329;
+  --ok:#6fd49a;--ok-bg:#173627;--late:#f0b95c;--late-bg:#3b2d14;--bad:#ff8a80;--bad-bg:#432220;--soon:#8ab8ff;--soon-bg:#17294a;--field:#121a16;color-scheme:dark}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 var(--font);overscroll-behavior:none}
+button,input{font:inherit;color:inherit}
+[hidden]{display:none!important}
+#login{min-height:100%;display:flex;flex-direction:column;justify-content:center;gap:14px;max-width:420px;margin:0 auto;padding:max(24px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
+#login h1{margin:0;font-size:24px;text-align:center}
+#login .lg{display:flex;justify-content:center;gap:14px;align-items:center;flex-wrap:wrap}
+#login .lg img{max-height:64px;max-width:140px;object-fit:contain}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px}
+input{width:100%;min-height:52px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--field);font-size:18px}
+input:focus-visible,button:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.btn{min-height:52px;border:0;border-radius:12px;background:var(--primary);color:var(--primary-ink);font-weight:700;font-size:17px;padding:0 18px;cursor:pointer}
+.btn.alt{background:var(--field);color:var(--ink);border:1px solid var(--line)}
+.btn.sm{min-height:44px;font-size:15px;padding:0 14px}
+.btn:disabled{opacity:.5}
+.err{color:var(--bad);font-weight:600;min-height:1.4em;text-align:center}
+#app{height:100%;display:flex;flex-direction:column}
+#hdr{display:flex;align-items:center;gap:10px;padding:max(8px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 8px max(12px,env(safe-area-inset-left));background:var(--panel);border-bottom:1px solid var(--line)}
+#hdr .lg{display:flex;gap:8px;align-items:center;min-width:0}
+#hdr .lg img{height:34px;max-width:90px;object-fit:contain}
+#hdr .ttl{flex:1;min-width:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--bad);flex:none}
+.dot.on{background:var(--ok)}
+.chip{border:1px solid var(--line);background:var(--field);border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer;min-height:36px}
+#alertBar{background:#c0392b;color:#fff;padding:12px max(14px,env(safe-area-inset-left));display:flex;gap:10px;align-items:center;font-weight:700;font-size:18px}
+#alertBar span{flex:1}
+#alertBar button{background:#fff;color:#c0392b;border:0;border-radius:8px;min-height:40px;padding:0 14px;font-weight:700}
+#view{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch}
+.pane{padding:12px max(12px,env(safe-area-inset-right)) 16px max(12px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:12px;max-width:760px;margin:0 auto}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+.card h3{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}
+#mapCard{position:relative;border-radius:14px;overflow:hidden;background:#0d1a14;aspect-ratio:1090/639;width:100%}
+#mapCard svg{position:absolute;inset:0;width:100%;height:100%}
+#clk{position:absolute;top:8px;right:8px;background:rgba(8,16,12,.82);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:6px 10px 7px;text-align:right;color:#c8ffd9}
+#clkT{font:700 clamp(18px,5.4vw,40px)/1 ui-monospace,Consolas,"Courier New",monospace;letter-spacing:.04em;font-variant-numeric:tabular-nums;text-shadow:0 0 10px rgba(120,255,170,.6)}
+#clkT small{font-size:.5em;opacity:.8;margin-left:2px}
+#clkD{font-size:clamp(9px,2.4vw,12px);font-weight:600;color:#9fe6b8;text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+#routeInfo{position:absolute;left:8px;bottom:8px;background:rgba(8,16,12,.78);color:#fff;border-radius:8px;padding:3px 9px;font-size:12px;font-weight:600}
+#nextBox .big{font:700 34px/1.1 ui-monospace,Consolas,"Courier New",monospace;color:var(--primary);font-variant-numeric:tabular-nums}
+#nextBox .sub{color:var(--muted);margin-top:2px}
+.slot{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.slot:first-of-type{border-top:0}
+.slot .tm{font:700 22px/1 ui-monospace,Consolas,"Courier New",monospace;font-variant-numeric:tabular-nums}
+.slot .mid{min-width:0}
+.slot .mid b{display:block;font-size:15px}
+.slot .mid small{display:block;color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.pill{display:inline-block;border-radius:999px;padding:5px 11px;font-size:13px;font-weight:700;white-space:nowrap}
+.p-ok{background:var(--ok-bg);color:var(--ok)}.p-late{background:var(--late-bg);color:var(--late)}.p-missed{background:var(--bad-bg);color:var(--bad)}.p-soon{background:var(--soon-bg);color:var(--soon)}.p-wait{background:var(--field);color:var(--muted)}
+.acts{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.dirbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+details summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center}
+.cnt{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center}
+.cnt div{background:var(--field);border:1px solid var(--line);border-radius:10px;padding:8px 4px}
+.cnt b{display:block;font-size:26px;font-variant-numeric:tabular-nums}
+.cnt span{font-size:12px;color:var(--muted)}
+table{width:100%;border-collapse:collapse}
+td,th{padding:7px 6px;border-top:1px solid var(--line);text-align:left;font-size:14px}
+th{font-size:12px;color:var(--muted);border-top:0}
+td.n{text-align:center;font-variant-numeric:tabular-nums;font-weight:700}
+.day{padding:8px 0;border-top:1px solid var(--line)}
+.day:first-of-type{border-top:0}
+.day h4{margin:0 0 4px;font-size:15px}
+.day .t{display:inline-block;margin:2px 6px 2px 0;padding:4px 9px;border-radius:8px;background:var(--soft);font-weight:700;font-variant-numeric:tabular-nums}
+.day .t.d1{background:var(--field);border:1px solid var(--line)}
+#chatList{display:flex;flex-direction:column;gap:8px;min-height:240px}
+.msg{max-width:86%;padding:8px 12px;border-radius:14px;background:var(--panel);border:1px solid var(--line);overflow-wrap:anywhere;white-space:pre-wrap}
+.msg.me{align-self:flex-end;background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
+.msg small{display:block;font-size:11px;opacity:.75;margin-bottom:2px}
+.msg.adm small{color:var(--soon);opacity:1;font-weight:700}
+#chatForm{position:sticky;bottom:0;display:flex;gap:8px;padding:8px 0 4px;background:var(--bg)}
+#nav{display:grid;grid-template-columns:repeat(4,1fr);background:var(--panel);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+#nav button{border:0;background:none;min-height:56px;font-weight:700;font-size:13px;color:var(--muted);position:relative;cursor:pointer}
+#nav button[aria-current="true"]{color:var(--primary)}
+#nav button[aria-current="true"]::before{content:"";position:absolute;top:0;left:20%;right:20%;height:3px;border-radius:0 0 3px 3px;background:var(--primary)}
+#nav .bd{position:absolute;top:6px;right:22%;background:var(--bad);color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;padding:0 4px}
+#toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;z-index:50;max-width:92vw;text-align:center}
+.hint{color:var(--muted);font-size:13px}
+.row2{display:flex;gap:8px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="login">
+  <div class="lg" id="lgLogos"></div>
+  <h1 id="lgTitle"></h1>
+  <div><label for="inPhone" id="lblPhone"></label><input id="inPhone" type="tel" inputmode="tel" autocomplete="tel"></div>
+  <div><label for="inPin" id="lblPin"></label><input id="inPin" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password"></div>
+  <div class="err" id="lgErr"></div>
+  <button class="btn" id="lgBtn" type="button"></button>
+  <div class="row2" style="justify-content:center"><button class="chip" data-lang="tr" type="button">TR</button><button class="chip" data-lang="en" type="button">EN</button></div>
+</div>
+
+<div id="app" hidden>
+  <header id="hdr">
+    <div class="lg" id="hdrLogos"></div>
+    <div class="ttl" id="hdrTitle"></div>
+    <span class="dot" id="dot" title=""></span>
+  </header>
+  <div id="alertBar" hidden><span id="alertTxt"></span><button id="alertX" type="button">OK</button></div>
+  <main id="view">
+    <section class="pane" id="p-today">
+      <div id="mapCard">
+        <svg id="mapSvg" viewBox="0 0 1090 639" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Map">
+          <image href="/map.jpg" x="0" y="0" width="1090" height="639" preserveAspectRatio="none"/>
+          <path id="rt" fill="none" stroke="#5b8cff" stroke-opacity=".55" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+          <path id="rt2" fill="none" stroke="#4a3df0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+          <g id="pinH"><circle r="14" fill="#fff" stroke="#d93a2f" stroke-width="5"/><circle r="5" fill="#d93a2f"/></g>
+          <g id="pinF"><circle r="14" fill="#fff" stroke="#1d5c47" stroke-width="5"/><circle r="5" fill="#1d5c47"/></g>
+          <g id="bus"><ellipse cx="0" cy="3" rx="19" ry="10" fill="#000" fill-opacity=".3"/><rect x="-18" y="-9" width="36" height="18" rx="5" fill="#ffc933" stroke="#fff" stroke-width="2"/><rect x="7" y="-6.5" width="8" height="13" rx="2" fill="#16302a"/><rect x="-14" y="-6" width="5" height="12" rx="1.5" fill="#16302a" fill-opacity=".7"/><rect x="-7" y="-6" width="5" height="12" rx="1.5" fill="#16302a" fill-opacity=".7"/></g>
+        </svg>
+        <div id="clk"><div id="clkT"></div><div id="clkD"></div></div>
+        <div id="routeInfo"></div>
+      </div>
+      <div class="card" id="nextBox"></div>
+      <div id="todayList"></div>
+    </section>
+    <section class="pane" id="p-week" hidden><div class="card" id="weekBox"></div></section>
+    <section class="pane" id="p-count" hidden><div id="countBox"></div></section>
+    <section class="pane" id="p-chat" hidden>
+      <div id="chatList"></div>
+      <form id="chatForm"><input id="chatIn" maxlength="1000" autocomplete="off"><button class="btn" id="chatSend" type="submit"></button></form>
+    </section>
+  </main>
+  <nav id="nav">
+    <button data-tab="today" type="button"></button><button data-tab="week" type="button"></button><button data-tab="count" type="button"></button><button data-tab="chat" type="button"></button>
+  </nav>
+</div>
+<div id="toast" hidden></div>
+
+<script src="/shared.js"></script>
+<script>
+(function(){
+'use strict';
+const D={
+tr:{loginTitle:'Şoför Girişi',phone:'Telefon numarası',pin:'PIN',login:'Giriş yap',badLogin:'Telefon veya PIN hatalı.',noconn:'Sunucuya bağlanılamadı. Tekrar deneniyor… (kod ',slow:'Sunucu yanıt vermiyor. İnternet veya ağ (WebSocket) engelliyor olabilir.',locked:'Çok fazla deneme. 10 dakika sonra tekrar deneyin.',removed:'Hesabınız kapatıldı. Yönetici ile görüşün.',
+ connecting:'Bağlanıyor…',online:'Bağlı',offline:'Bağlantı yok, tekrar deneyin.',tToday:'Bugün',tWeek:'Hafta',tCount:'Sayım',tChat:'Sohbet',
+ noPub:'Program henüz yayınlanmadı.',dir0:'Otelden Spor Tesisine',dir1:'Spor Tesisinden Otele',mine:'Benim seferlerim',others:'Diğer saatler',extra:'Ekstra sefer',
+ done:'Seferi yaptım',doneOther:'Ben yaptım',undo:'Geri al',vehNeed:'{n} araç gerekli',next:'Sıradaki servis',noNext:'Bugün kalan sefer yok',
+ inT:'{m} dk {s} sn sonra',ok:'Zamanında',late:'Geç yapıldı',missed:'Yapılmadı',soon:'Yaklaşıyor',wait:'Bekliyor',
+ soonMsg:'{t} servisine {m} dk kaldı',nowMsg:'{t} servis saati geldi',noAssign:'Atama yok',planned:'Planlanan sefer',weekHint:'Size atanan seferler',
+ cToday:'Bugün',cWeek:'Bu hafta',cMonth:'Bu ay',total:'Toplam',h2f:'Otel → Tesis',f2h:'Tesis → Otel',last:'Son seferlerim',logout:'Çıkış yap',notif:'Bildirimleri aç',notifOn:'Bildirimler açık',
+ wake:'Ekranı açık tut',wakeOn:'Ekran açık kalıyor',ios:'iPhone: Paylaş düğmesi → Ana Ekrana Ekle. Hatırlatma için uygulama açık olmalı.',
+ typeMsg:'Mesaj yaz…',send:'Gönder',noMsgs:'Henüz mesaj yok.',admin:'Yönetici',route:'Güzergah: 3,6 km · yaklaşık 6 dk',hotel:'Otel',fac:'Tesis',saved:'Kaydedildi',manual:'Elle',
+ sub:'{n} sefer yapıldı',needPub:'Takvimde bu gün için saat bulunamadı.',outRange:'Bu tarih seçili çizelge aralığında değil.',lastNote:'Son servisten sonra'},
+en:{loginTitle:'Driver Login',phone:'Phone number',pin:'PIN',login:'Log in',badLogin:'Wrong phone or PIN.',noconn:'Could not reach the server. Retrying… (code ',slow:'The server is not answering. Your network may block WebSocket.',locked:'Too many attempts. Try again in 10 minutes.',removed:'Your account was closed. Contact the manager.',
+ connecting:'Connecting…',online:'Connected',offline:'No connection, try again.',tToday:'Today',tWeek:'Week',tCount:'Counts',tChat:'Chat',
+ noPub:'The schedule has not been published yet.',dir0:'Hotel to Sports Facility',dir1:'Sports Facility to Hotel',mine:'My trips',others:'Other times',extra:'Extra trip',
+ done:'I did this trip',doneOther:'I did it',undo:'Undo',vehNeed:'{n} vehicles needed',next:'Next shuttle',noNext:'No trips left today',
+ inT:'in {m} min {s} s',ok:'On time',late:'Done late',missed:'Not done',soon:'Soon',wait:'Waiting',
+ soonMsg:'{m} min to the {t} shuttle',nowMsg:'It is time for the {t} shuttle',noAssign:'Nothing assigned',planned:'Planned trips',weekHint:'Trips assigned to you',
+ cToday:'Today',cWeek:'This week',cMonth:'This month',total:'Total',h2f:'Hotel → Facility',f2h:'Facility → Hotel',last:'My latest trips',logout:'Log out',notif:'Turn on notifications',notifOn:'Notifications on',
+ wake:'Keep screen on',wakeOn:'Screen stays on',ios:'iPhone: Share button → Add to Home Screen. Keep the app open for reminders.',
+ typeMsg:'Write a message…',send:'Send',noMsgs:'No messages yet.',admin:'Manager',route:'Route: 3.6 km · about 6 min',hotel:'Hotel',fac:'Facility',saved:'Saved',manual:'Manual',
+ sub:'{n} trips done',needPub:'No times found for this day.',outRange:'This date is outside the selected schedule.',lastNote:'After the last service'}
+};
+let lang=localStorage.getItem('sv-lang')||'tr';
+const L=(k,o)=>{let s=(D[lang]&&D[lang][k])||D.tr[k]||k;if(o)for(const x in o)s=s.replace('{'+x+'}',o[x]);return s};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const J=JSON.stringify;
+const st={drivers:{},assign:{},trips:{},msgs:[],kv:{}};
+let gotReady=false,slowT=null,ws=null,authed=false,cred=null,seq=0,retry=0,lastPong=0,pending=new Map(),me=null,stop=false,tab='today',dirty=new Set();
+
+/* ---------- bağlantı ---------- */
+function setConn(){const on=authed&&ws&&ws.readyState===1;$('#dot').classList.toggle('on',on);$('#dot').title=on?L('online'):L('connecting')}
+function connect(){
+  if(!cred||stop)return;
+  setConn();gotReady=false;clearTimeout(slowT);slowT=setTimeout(()=>{if(!gotReady&&cred)$('#lgErr').textContent=L('slow')},9000);
+  ws=new WebSocket((location.protocol==='https:'?'wss':'ws')+'://'+location.host+'/ws');
+  ws.onopen=()=>ws.send(J({t:'auth',role:'driver',phone:cred.phone,pin:cred.pin}));
+  ws.onmessage=e=>{if(e.data==='pong'){lastPong=Date.now();return}let m;try{m=JSON.parse(e.data)}catch(x){return}onMsg(m)};
+  ws.onclose=ev=>{authed=false;setConn();if(!gotReady&&cred&&ev.code!==4001)$('#lgErr').textContent=L('noconn')+ev.code+')';pending.forEach(p=>p.rej(new Error(L('offline'))));pending.clear();
+    if(ev.code===4001){logout(true,L('removed'));return}
+    if(cred&&!stop)setTimeout(connect,Math.min(5000,800*(++retry)))};
+}
+function act(a,d){return new Promise((res,rej)=>{
+  if(!ws||ws.readyState!==1||!authed){rej(new Error(L('offline')));return}
+  const id=++seq;pending.set(id,{res,rej});ws.send(J({t:'act',id,a,d}));
+  setTimeout(()=>{if(pending.has(id)){pending.delete(id);rej(new Error(L('offline')))}},10000)})}
+setInterval(()=>{if(ws&&ws.readyState===1){ws.send('ping');if(authed&&lastPong&&Date.now()-lastPong>70000)ws.close()}},25000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&cred&&(!ws||ws.readyState>1)){retry=0;connect()}tick()});
+window.addEventListener('online',()=>{if(cred&&(!ws||ws.readyState>1)){retry=0;connect()}});
+
+function onMsg(m){
+  if(m.t==='authfail'){$('#lgErr').textContent=m.locked?L('locked'):L('badLogin');localStorage.removeItem('sv-cred');cred=null;stop=true;try{ws.close()}catch(e){}showLogin();return}
+  if(m.t==='ready'){gotReady=true;clearTimeout(slowT);$('#lgErr').textContent='';authed=true;retry=0;lastPong=Date.now();me={id:m.me,name:m.name};setConn();showApp();return}
+  if(m.t==='snap'){const d=m.data;st.drivers=map(d.drivers);st.assign=map(d.assign);st.trips=map(d.trips);st.msgs=d.msgs||[];st.kv=d.kv||{};dirty.add('all');flush();return}
+  if(m.t==='ops'){m.ops.forEach(applyOp);flush();return}
+  if(m.t==='ack'){const p=pending.get(m.id);if(p){pending.delete(m.id);m.ok?p.res(m.data):p.rej(new Error(m.e||'Hata'))}}
+}
+const map=a=>{const o={};(a||[]).forEach(x=>o[x.id]=x);return o};
+function applyOp(o){
+  if(o.t==='set'){st.kv[o.k]=o.v;dirty.add(o.k==='brand'?'brand':'today');return}
+  if(o.c==='msgs'){if(o.t==='put'){if(!st.msgs.some(x=>x.id===o.v.id))st.msgs.push(o.v)}else st.msgs=st.msgs.filter(x=>x.id!==o.id);dirty.add('chat');return}
+  const col=st[o.c];if(!col)return;
+  if(o.t==='put')col[o.v.id]=o.v;else delete col[o.id];
+  dirty.add(o.c==='drivers'?'chat':'today');dirty.add('count');dirty.add('week');
+}
+
+/* ---------- giriş ---------- */
+function showLogin(){$('#login').hidden=false;$('#app').hidden=true;renderBrand();applyLang()}
+function showApp(){$('#login').hidden=true;$('#app').hidden=false;applyLang();setTab(tab)}
+function doLogin(){
+  const phone=$('#inPhone').value.trim(),pin=$('#inPin').value.trim();
+  if(!phone||!pin){$('#lgErr').textContent=L('badLogin');return}
+  $('#lgErr').textContent='';unlock();
+  cred={phone,pin};localStorage.setItem('sv-cred',JSON.stringify(cred));stop=false;
+  if(ws){try{ws.onclose=null;ws.close()}catch(e){}}
+  connect();
+}
+function logout(keepMsg,msg){
+  stop=true;cred=null;authed=false;localStorage.removeItem('sv-cred');if(ws){try{ws.onclose=null;ws.close()}catch(e){}}
+  $('#inPin').value='';$('#lgErr').textContent=keepMsg?msg:'';showLogin();
+}
+$('#lgBtn').addEventListener('click',doLogin);
+$('#inPin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>{lang=b.dataset.lang;localStorage.setItem('sv-lang',lang);applyLang();dirty.add('all');flush()}));
+
+/* ---------- metinler ve marka ---------- */
+function applyLang(){
+  document.documentElement.lang=lang;
+  $('#lgTitle').textContent=L('loginTitle');$('#lblPhone').textContent=L('phone');$('#lblPin').textContent=L('pin');$('#lgBtn').textContent=L('login');
+  const tb=['tToday','tWeek','tCount','tChat'];document.querySelectorAll('#nav button').forEach((b,i)=>{b.firstChild&&b.firstChild.nodeType===3?(b.firstChild.nodeValue=L(tb[i])):b.prepend(document.createTextNode(L(tb[i])))});
+  $('#chatIn').placeholder=L('typeMsg');$('#chatSend').textContent=L('send');$('#routeInfo').textContent=L('route');
+}
+function renderBrand(){
+  const b=st.kv.brand||{},logos=[b.c1&&b.c1.logo,b.c2&&b.c2.logo].filter(Boolean).map(s=>`<img src="${s}" alt="">`).join('');
+  const app=b.app?`<img src="${b.app}" alt="">`:'';
+  $('#lgLogos').innerHTML=app+logos;$('#hdrLogos').innerHTML=(app||'')+logos;
+  const title=b.title||'Servis';$('#hdrTitle').textContent=title;document.title=title;
+}
+(function loadBrandCache(){try{const c=JSON.parse(localStorage.getItem('sv-brand')||'null');if(c){st.kv.brand=c;renderBrand()}}catch(e){}})();
+
+/* ---------- çizim ---------- */
+function flush(){
+  if(dirty.has('brand')||dirty.has('all')){renderBrand();try{if(st.kv.brand)localStorage.setItem('sv-brand',J(st.kv.brand))}catch(e){}}
+  if(dirty.has('today')||dirty.has('all'))renderToday();
+  if(dirty.has('week')||dirty.has('all'))renderWeek();
+  if(dirty.has('count')||dirty.has('all'))renderCount();
+  if(dirty.has('chat')||dirty.has('all'))renderChat();
+  dirty.clear();
+}
+const gr=()=>(st.kv.settings&&st.kv.settings.grace)||10;
+const rem=()=>(st.kv.settings&&st.kv.settings.remind)||5;
+const dirName=d=>L('dir'+d);
+const mineToday=()=>{const t=SV.today();return Object.values(st.assign).filter(a=>a.date===t)};
+const tripOf=(date,dir,t)=>Object.values(st.trips).find(x=>x.date===date&&x.dir===dir&&x.slot===t);
+
+function slotRow(s,date,mine){
+  const tr=tripOf(date,s.dir,s.t),now=Date.now(),sub=[];
+  if(s.n)sub.push(L('vehNeed',{n:esc(s.n)}));if(s.note)sub.push(esc(s.note));
+  let right='';
+  if(tr){
+    const stt=SV.status(date,s.t,tr,now,gr());
+    right=`<span class="pill p-${stt}">✓ ${SV.hhmm(tr.at)}</span>`;
+    if(now-tr.at<600000&&tr.src==='driver')right+=`<button class="btn alt sm" data-act="undo" data-id="${tr.id}" type="button">${L('undo')}</button>`;
+  }else{
+    const stt=mine?SV.status(date,s.t,null,now,gr()):'wait';
+    if(mine)right=`<span class="pill p-${stt}">${L(stt)}</span>`;
+    right+=`<button class="btn sm" data-act="done" data-dir="${s.dir}" data-t="${s.t}" type="button">${L(mine?'done':'doneOther')}</button>`;
+  }
+  return `<div class="slot"><div class="tm">${s.t}</div><div class="mid"><b>${esc(dirName(s.dir))}</b>${sub.length?`<small>${sub.join(' · ')}</small>`:''}</div><div class="acts">${right}</div></div>`;
+}
+function renderToday(){
+  const pub=st.kv.pub,date=SV.today();
+  if(!pub){$('#todayList').innerHTML=`<div class="card">${L('noPub')}</div>`;renderNext();return}
+  const p=SV.profFor(pub,date),slots=SV.slotsFor(pub,date),mset=new Set(mineToday().map(a=>a.dir+'|'+a.slot));
+  const mine=slots.filter(s=>mset.has(s.dir+'|'+s.t)),others=slots.filter(s=>!mset.has(s.dir+'|'+s.t));
+  const dl=SV.dateLines(p,lang).join(' · ');
+  let h=`<div class="card"><h3>${esc(p?p.name:'')}${p&&p.event?' · '+esc(p.event):''}</h3><div class="hint">${esc(dl)}${SV.inRange(pub,date)?'':' · '+L('outRange')}</div></div>`;
+  if(mine.length)h+=`<div class="card"><h3>${L('mine')}</h3>${mine.map(s=>slotRow(s,date,true)).join('')}</div>`;
+  if(others.length)h+=`<div class="card"><details${mine.length?'':' open'}><summary>${L('others')} (${others.length})</summary>${others.map(s=>slotRow(s,date,false)).join('')}</details></div>`;
+  if(!slots.length)h+=`<div class="card">${L('needPub')}</div>`;
+  h+=`<div class="card"><h3>${L('extra')}</h3><div class="dirbtns"><button class="btn alt" data-act="extra" data-dir="0" type="button">${L('h2f')}</button><button class="btn alt" data-act="extra" data-dir="1" type="button">${L('f2h')}</button></div></div>`;
+  $('#todayList').innerHTML=h;renderNext();
+}
+function nextSlot(){
+  const pub=st.kv.pub;if(!pub)return null;const date=SV.today(),now=Date.now();
+  const slots=SV.slotsFor(pub,date),mset=new Set(mineToday().map(a=>a.dir+'|'+a.slot));
+  const pool=mset.size?slots.filter(s=>mset.has(s.dir+'|'+s.t)):slots;
+  return pool.find(s=>!tripOf(date,s.dir,s.t)&&SV.slotMs(date,s.t)>=now-60000)||null;
+}
+function renderNext(){
+  const s=nextSlot(),el=$('#nextBox');
+  if(!s){el.innerHTML=`<h3>${L('next')}</h3><div class="sub">${L('noNext')}</div>`;return}
+  const ms=SV.slotMs(SV.today(),s.t)-Date.now(),m=Math.max(0,Math.floor(ms/60000)),sec=Math.max(0,Math.floor(ms/1000)%60);
+  el.innerHTML=`<h3>${L('next')}</h3><div class="big">${s.t}</div><div class="sub"><b>${esc(dirName(s.dir))}</b> · ${L('inT',{m,s:sec})}${s.n?' · '+L('vehNeed',{n:esc(s.n)}):''}${s.note?'<br>'+esc(s.note):''}</div>`;
+}
+function renderWeek(){
+  const t0=SV.today(),pub=st.kv.pub;let h=`<h3>${L('weekHint')}</h3>`,any=false;
+  for(let i=0;i<7;i++){
+    const d=SV.addDays(t0,i),list=Object.values(st.assign).filter(a=>a.date===d).sort((a,b)=>a.slot<b.slot?-1:a.slot>b.slot?1:a.dir-b.dir);
+    const meta=pub?SV.slotsFor(pub,d):[];
+    h+=`<div class="day"><h4>${esc(SV.fmtDate(d,lang,{weekday:'long',day:'numeric',month:'long'}))}</h4>`;
+    if(!list.length)h+=`<span class="hint">${L('noAssign')}</span>`;
+    list.forEach(a=>{any=true;const m=meta.find(x=>x.dir===a.dir&&x.t===a.slot);h+=`<span class="t d${a.dir}" title="${esc(dirName(a.dir))}">${a.slot} ${a.dir?'←':'→'}${m&&m.note?' · '+esc(m.note):''}</span>`});
+    h+='</div>';
+  }
+  $('#weekBox').innerHTML=h+`<p class="hint">→ ${L('dir0')} &nbsp; ← ${L('dir1')}</p>`;
+}
+function renderCount(){
+  const t0=SV.today(),ws0=SV.weekStart(t0),mo=t0.slice(0,7),all=Object.values(st.trips);
+  const c=f=>{const a=all.filter(f);return[a.filter(x=>x.dir===0).length,a.filter(x=>x.dir===1).length]};
+  const rows=[[L('cToday'),c(x=>x.date===t0)],[L('cWeek'),c(x=>x.date>=ws0&&x.date<=t0)],[L('cMonth'),c(x=>x.date.slice(0,7)===mo)]];
+  let h=`<div class="card"><table><tr><th></th><th>${L('h2f')}</th><th>${L('f2h')}</th><th>${L('total')}</th></tr>${rows.map(r=>`<tr><td>${r[0]}</td><td class="n">${r[1][0]}</td><td class="n">${r[1][1]}</td><td class="n">${r[1][0]+r[1][1]}</td></tr>`).join('')}</table></div>`;
+  const last=all.sort((a,b)=>b.at-a.at).slice(0,10);
+  if(last.length)h+=`<div class="card"><h3>${L('last')}</h3><table>${last.map(x=>`<tr><td>${esc(SV.fmtDate(x.date,lang,{day:'numeric',month:'short'}))}</td><td class="n">${x.slot||L('manual')}</td><td>${x.dir?'←':'→'} ${esc(dirName(x.dir))}</td><td class="n">${SV.hhmm(x.at)}</td></tr>`).join('')}</table></div>`;
+  const nOn=('Notification' in window)&&Notification.permission==='granted';
+  h+=`<div class="card"><div class="row2"><button class="btn alt sm" id="bNotif" type="button">${nOn?'✓ '+L('notifOn'):L('notif')}</button><button class="btn alt sm" id="bWake" type="button">${wl?'✓ '+L('wakeOn'):L('wake')}</button><button class="btn alt sm" id="bOut" type="button">${L('logout')}</button></div><p class="hint">${L('ios')}</p></div>`;
+  $('#countBox').innerHTML=h;
+}
+function renderChat(){
+  const box=$('#chatList'),atEnd=box.scrollHeight-box.scrollTop-box.clientHeight<80||!box.children.length;
+  box.innerHTML=st.msgs.length?st.msgs.map(m=>{
+    const mine=m.from.role==='driver'&&m.from.id===(me&&me.id),adm=m.from.role==='admin';
+    return `<div class="msg${mine?' me':''}${adm?' adm':''}"><small>${esc(adm?L('admin')+' · '+m.from.name:m.from.name)} · ${SV.hhmm(m.ts)}</small>${esc(m.text)}</div>`}).join(''):`<div class="hint">${L('noMsgs')}</div>`;
+  if(tab==='chat'){markSeen();$('#view').scrollTop=$('#view').scrollHeight}
+  badge();
+}
+const seenKey='sv-seen';
+function markSeen(){const l=st.msgs.length?st.msgs[st.msgs.length-1].ts:0;localStorage.setItem(seenKey,String(l))}
+function badge(){
+  const seen=+localStorage.getItem(seenKey)||0,n=tab==='chat'?0:st.msgs.filter(m=>m.ts>seen&&!(m.from.role==='driver'&&m.from.id===(me&&me.id))).length;
+  const b=document.querySelector('#nav [data-tab="chat"]');let e=b.querySelector('.bd');
+  if(n){if(!e){e=document.createElement('span');e.className='bd';b.appendChild(e)}e.textContent=n>9?'9+':n}else if(e)e.remove();
+}
+
+/* ---------- sekmeler ve eylemler ---------- */
+function setTab(t){
+  tab=t;['today','week','count','chat'].forEach(x=>$('#p-'+x).hidden=x!==t);
+  document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===t));
+  $('#view').scrollTop=0;dirty.add('all');flush();if(t==='chat'){markSeen();badge();$('#view').scrollTop=$('#view').scrollHeight}
+}
+document.querySelectorAll('#nav button').forEach(b=>b.addEventListener('click',()=>{unlock();setTab(b.dataset.tab)}));
+function toast(m){const e=$('#toast');e.textContent=m;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2600)}
+$('#todayList').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;unlock();b.disabled=true;
+  try{
+    const a=b.dataset.act;
+    if(a==='undo')await act('trip_undo',{id:b.dataset.id});
+    else await act('trip_add',{date:SV.today(),dir:+b.dataset.dir,slot:a==='extra'?null:b.dataset.t});
+    if(navigator.vibrate)navigator.vibrate(60);toast(L('saved'));
+  }catch(err){toast(err.message)}
+  b.disabled=false;
+});
+$('#countBox').addEventListener('click',async e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.id==='bOut')logout();
+  if(b.id==='bNotif'&&'Notification' in window){await Notification.requestPermission();renderCount()}
+  if(b.id==='bWake')toggleWake();
+});
+$('#chatForm').addEventListener('submit',async e=>{
+  e.preventDefault();const v=$('#chatIn').value.trim();if(!v)return;unlock();
+  try{await act('say',{text:v});$('#chatIn').value=''}catch(err){toast(err.message)}
+});
+$('#alertX').addEventListener('click',()=>$('#alertBar').hidden=true);
+
+/* ---------- ekran açık tut ---------- */
+let wl=null;
+async function toggleWake(){
+  try{if(wl){await wl.release();wl=null}else if(navigator.wakeLock){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}}catch(e){}
+  renderCount();
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&wl===null&&localStorage.getItem('sv-wake')==='1'&&navigator.wakeLock)navigator.wakeLock.request('screen').then(x=>wl=x).catch(()=>{})});
+
+/* ---------- ses, titreşim, hatırlatma ---------- */
+let ac=null;
+function unlock(){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume()}catch(e){}}
+document.addEventListener('pointerdown',unlock);
+function beep(){if(!ac)return;[0,.28,.56].forEach(t=>{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=880;g.gain.value=.25;o.connect(g);g.connect(ac.destination);o.start(ac.currentTime+t);o.stop(ac.currentTime+t+.16)})}
+function notify(msg){
+  $('#alertTxt').textContent=msg;$('#alertBar').hidden=false;beep();
+  if(navigator.vibrate)navigator.vibrate([300,120,300,120,300]);
+  if('Notification' in window&&Notification.permission==='granted'&&navigator.serviceWorker){
+    navigator.serviceWorker.ready.then(r=>r.showNotification(document.title,{body:msg,icon:'/icon-192.png',tag:'svc-'+msg,vibrate:[300,120,300]})).catch(()=>{});
+  }
+}
+function checkReminders(now){
+  const date=SV.today();
+  mineToday().forEach(a=>{
+    if(tripOf(date,a.dir,a.slot))return;
+    const diff=SV.slotMs(date,a.slot)-now,k1='sv-r5|'+a.id,k2='sv-r0|'+a.id;
+    if(diff>0&&diff<=rem()*60000&&!localStorage.getItem(k1)){localStorage.setItem(k1,'1');notify(L('soonMsg',{t:a.slot,m:Math.max(1,Math.ceil(diff/60000))})+' · '+dirName(a.dir))}
+    else if(diff<=0&&diff>-120000&&!localStorage.getItem(k2)){localStorage.setItem(k2,'1');notify(L('nowMsg',{t:a.slot})+' · '+dirName(a.dir))}
+  });
+}
+
+/* ---------- saat, harita, animasyon ---------- */
+const ROUTE=SV.ROUTE,pathD='M'+ROUTE.map(p=>p.join(' ')).join(' L');
+$('#rt').setAttribute('d',pathD);$('#rt2').setAttribute('d',pathD);
+const rtLen=$('#rt2').getTotalLength();
+$('#pinH').setAttribute('transform',`translate(${ROUTE[0][0]} ${ROUTE[0][1]})`);
+$('#pinF').setAttribute('transform',`translate(${ROUTE[ROUTE.length-1][0]} ${ROUTE[ROUTE.length-1][1]})`);
+const t0a=performance.now(),LEG=13000,PAUSE=1600;
+function anim(now){
+  const cyc=LEG+PAUSE,k=Math.floor((now-t0a)/cyc),ph=(now-t0a)%cyc,fwd=k%2===0;
+  let f=Math.min(1,ph/LEG);f=f<.5?2*f*f:1-Math.pow(-2*f+2,2)/2;
+  const d=(fwd?f:1-f)*rtLen,p=$('#rt2').getPointAtLength(d),q=$('#rt2').getPointAtLength(Math.min(rtLen,Math.max(0,d+(fwd?3:-3))));
+  $('#bus').setAttribute('transform',`translate(${p.x} ${p.y}) rotate(${Math.atan2(q.y-p.y,q.x-p.x)*180/Math.PI})`);
+  requestAnimationFrame(anim);
+}
+if(!matchMedia('(prefers-reduced-motion:reduce)').matches)requestAnimationFrame(anim);
+function tick(){
+  const now=Date.now(),s=new Date(now+10800000),p=SV.pad;
+  $('#clkT').innerHTML=`${p(s.getUTCHours())}:${p(s.getUTCMinutes())}<small>:${p(s.getUTCSeconds())}</small>`;
+  $('#clkD').textContent=SV.fmtDate(SV.today(),lang,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  if(authed){renderNext();checkReminders(now);if(s.getUTCSeconds()%15===0){dirty.add('today');flush()}}
+}
+setInterval(tick,1000);tick();
+
+/* ---------- başlangıç ---------- */
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+try{const c=JSON.parse(localStorage.getItem('sv-cred')||'null');if(c&&c.phone&&c.pin){cred=c;$('#inPhone').value=c.phone;connect()}}catch(e){}
+showLogin();
+if(cred)$('#login').hidden=false;
+})();
+</script>
+</body>
+</html>
